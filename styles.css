@@ -1,0 +1,173 @@
+/* Main styles for Go Fish game */
+
+body {
+    font-family: Arial, sans-serif;
+    background: #2e8b57;
+    margin: 0;
+    padding: 0;
+    color: #222;
+}
+
+/* Header and footer look the same */
+header, footer {
+    background: #14532d;
+    color: #fff;
+    text-align: center;
+    padding: 1em 0;
+}
+
+/* Layout for the game */
+.game-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    margin: 2em auto;
+    max-width: 1100px;
+}
+
+/* Player and computer hands */
+.hand {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    min-width: 250px;
+    text-align: center;
+}
+
+/* Cards in a row */
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 8px;
+    min-height: 110px;
+}
+
+/* Card style */
+.card {
+    width: 70px;
+    height: 100px;
+    background-color: #eee;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+/* Card hover effect */
+.card:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Deck area in the middle */
+#deck-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 2em;
+}
+
+/* Deck stack */
+#deck {
+    width: 70px;
+    height: 100px;
+    background-image: url('images/cardstack.png');
+    background-size: cover;
+    border: 2px solid #333;
+    border-radius: 8px;
+    margin-bottom: 1em;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+}
+
+/* Number of cards left in deck */
+.cards-remaining {
+    position: absolute;
+    bottom: 5px;
+    right: 8px;
+    background: rgba(255,255,255,0.8);
+    color: #222;
+    font-size: 1.1em;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+/* Message area for game updates */
+#message-area {
+    min-height: 2em;
+    margin-top: 1em;
+    font-weight: bold;
+    color: #14532d;
+    text-align: center;
+}
+
+/* Controls (like new game button) */
+.controls {
+    text-align: center;
+    margin: 2em 0;
+}
+
+/* Button style */
+button {
+    background: #14532d;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.7em 1.5em;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 0.5em;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #1e7a3a;
+}
+
+/* Modal for rules */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    overflow: auto;
+    background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background: #fff;
+    margin: 8% auto;
+    padding: 2em;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+}
+
+.close {
+    color: #888;
+    position: absolute;
+    top: 10px; right: 18px;
+    font-size: 2em;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #14532d;
+}
+
+/* Disabled cards look faded and unclickable */
+.card.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}

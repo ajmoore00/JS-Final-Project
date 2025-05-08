@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Fish</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="goFish.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Go Fish!</h1>
+        <button id="rules-btn">How to Play</button>
+    </header>
+
+    <div id="rules-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>How to Play</h2>
+            <ul>
+                <li>Click a card in your hand to ask the computer for that rank.</li>
+                <li>If the computer has any, you get all of them and can ask again.</li>
+                <li>If not, you'll have to "Go Fish" by clicking the deck to draw a card.</li>
+                <li>If you get the card you asked for, you go again. If not, it's the computer's turn.</li>
+                <li>If you collect all four cards of a rank, you lay down a "book".</li>
+                <li>The game ends when all books are made. Whoever has the most books wins.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div id="computer-hand" class="hand">
+            <h2>Computer's Cards</h2>
+            <div class="cards"></div>
+            <p>Books Collected: <span id="computer-books">0</span></p>
+        </div>
+        
+        <div id="deck-area">
+            <div id="deck" class="card">
+                <span class="cards-remaining"></span>
+            </div>
+            <div id="message-area"></div>
+            <div id="response-buttons" style="display:none;">
+                <button id="yes-btn">Yes</button>
+                <button id="no-btn">No</button>
+            </div>
+        </div>
+
+        <div id="player-hand" class="hand">
+            <h2>Your Cards</h2>
+            <div class="cards"></div>
+            <p>Books Collected: <span id="player-books">0</span></p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="new-game">Start Over</button>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Austin Moore</p>
+    </footer>
+</body>
+</html>
