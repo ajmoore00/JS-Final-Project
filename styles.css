@@ -1,5 +1,9 @@
 /* --- Go Fish Game: Modern Casino Makeover --- */
 
+html, body {
+    height: 100%;
+}
+
 body {
     font-family: 'Segoe UI', 'Arial', sans-serif;
     background: radial-gradient(ellipse at center, #357a38 0%, #14532d 100%);
@@ -13,13 +17,14 @@ body {
     box-shadow: 0 0 0 36px #8b5c2a, 0 0 0 60px #5a3a1b;
     border-radius: 38px;
     border: 10px solid #8b5c2a;
+    display: flex;
+    flex-direction: column;
 }
 
 header, footer {
     background: rgba(20, 83, 45, 0.95);
     color: #fff;
     text-align: center;
-    padding: 1.2em 0;
     letter-spacing: 2px;
     box-shadow: 0 2px 12px #0008;
     font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
@@ -33,9 +38,13 @@ header h1 {
 }
 
 footer {
-    font-size: 1.1em;
+    font-size: 0.7em !important;
+    padding: 0.2em 0 !important;
+    min-height: unset;
+    line-height: 1.1;
     background: rgba(20, 83, 45, 0.95);
     box-shadow: 0 -2px 12px #0008;
+    margin-top: auto;
 }
 
 .game-container {
@@ -55,7 +64,7 @@ footer {
     box-shadow: 0 4px 24px #0005, 0 0 0 4px #fff2 inset;
     min-width: 260px;
     text-align: center;
-    border: 3px solid #e6d36b; /* faded yellow */
+    border: 3px solid #e6d36b;
     backdrop-filter: blur(2px);
     position: relative;
 }
@@ -98,7 +107,9 @@ footer {
     touch-action: manipulation;
 }
 
-.card:hover:not(.disabled) {
+.card:hover:not(.disabled),
+.card.hovered,
+.card:active:not(.disabled) {
     transform: translateY(-12px) scale(1.07) rotate(-2deg);
     box-shadow: 0 8px 32px #0008, 0 0 12px #00e6ff99;
     border-color: #00e6ff;
@@ -129,8 +140,8 @@ footer {
     top: 0;
     left: 50%;
     transform: translate(-50%, 0);
-    width: 88px;   /* slightly wider than deck */
-    height: 120px; /* slightly taller than deck */
+    width: 88px;
+    height: 120px;
     background: linear-gradient(135deg, #b71c1c 70%, #7b1f1f 100%);
     border-radius: 14px;
     z-index: 1;
@@ -144,20 +155,22 @@ footer {
     height: 104px;
     background-image: url('images/cardstack.png');
     background-size: cover;
-    border: 3px solid #e6d36b; /* faded yellow */
+    border: 3px solid #e6d36b;
     border-radius: 12px;
     margin-bottom: 0.5em;
     display: flex;
     align-items: flex-end;
     justify-content: center;
     position: relative;
+    top: 6px;
     box-shadow: 0 4px 18px #0005, 0 0 0 2px #357a38, 0 0 16px #e6d36b55;
     cursor: pointer;
     transition: box-shadow 0.18s, border-color 0.18s;
     z-index: 2;
 }
 
-#deck:active {
+#deck:active,
+#deck.hovered {
     box-shadow: 0 2px 8px #000a, 0 0 8px #00e6ff99;
     border-color: #00e6ff;
 }
@@ -276,18 +289,29 @@ button:hover, button:focus {
     margin: 0.5em 0 0 0;
 }
 
+.books-label {
+    font-size: 0.85em;
+}
+
+/* --- Responsive: Portrait & Mobile --- */
 @media (max-width: 900px) {
+    html, body {
+        width: 100%;
+        overflow-x: hidden;
+    }
     .game-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
         flex-direction: column;
         align-items: stretch;
-        max-width: 100vw;
-        margin: 1em 0;
         gap: 1.5em;
     }
     #deck-area {
         margin: 0 0.5em;
         padding: 1em 0.5em;
-        background: none !important;   /* Remove any red background */
+        background: none !important;
         box-shadow: none !important;
         border: none !important;
     }
@@ -295,13 +319,14 @@ button:hover, button:focus {
         min-width: unset;
         width: 97vw;
         margin: 0 auto 1em auto;
-        background: rgba(255,255,255,0.13); /* Remove any red background */
+        background: rgba(255,255,255,0.13);
         box-shadow: 0 4px 24px #0005, 0 0 0 4px #fff2 inset;
         border: 3px solid #ffd700;
     }
     .cards {
-        flex-wrap: nowrap;
-        overflow-x: auto;
+        flex-wrap: wrap !important;
+        justify-content: center;
+        align-items: flex-end;
         min-height: 110px;
         gap: 6px;
     }
@@ -311,8 +336,17 @@ button:hover, button:focus {
         font-size: 0.9em;
     }
     #deck {
-        width: 54px;
-        height: 78px;
+        width: 80px;
+        height: 116px;
+        border-radius: 12px;
+        position: relative;
+        top: -2px; /* Move deck up for centering */
+    }
+    #deck-platform {
+        width: 96px;
+        height: 132px;
+        border-radius: 14px;
+        top: 10px;
     }
     .modal-content {
         width: 98vw;
@@ -320,30 +354,224 @@ button:hover, button:focus {
         padding: 1em;
     }
     body {
-        box-shadow: 0 0 0 12px #7b4a19, 0 0 0 18px #4e2c0a;
-        border-radius: 18px;
-        border-width: 4px;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+    }
+    footer {
+        font-size: 0.6em !important;
+        padding: 0.08em 0 !important;
+        min-height: unset;
+        line-height: 1.1;
     }
 }
 
-@media (max-width: 500px) {
-    header, footer {
-        font-size: 1em;
-        padding: 0.5em 0;
+/* --- Responsive: Small Devices --- */
+@media (max-width: 600px) {
+    .game-container {
+        gap: 0.5em;
+        margin: 0.5em 0 0.5em 0;
     }
-    h1, h2 {
+    .hand {
+        width: 98vw;
+        min-width: unset;
+        padding: 0.5em 0.2em 0.5em 0.2em;
+        border-radius: 10px;
+    }
+    .cards {
+        gap: 4px;
+        min-height: 80px;
+    }
+    .card {
+        width: 38px;
+        height: 56px;
+        border-radius: 6px;
+        background-size: contain;
+        background-position: center;
+        margin: 0;
+    }
+    #deck {
+        width: 38px;
+        height: 56px;
+        border-radius: 6px;
+    }
+    #deck-platform {
+        width: 48px;
+        height: 66px;
+        border-radius: 8px;
+    }
+    header h1 {
         font-size: 1.2em;
     }
-    button {
+    #message-area {
+        font-size: 1em;
+        padding: 0.2em 0.1em;
+    }
+}
+
+/* --- Responsive: Landscape --- */
+@media (orientation: landscape) and (max-width: 900px) {
+    html, body {
+        height: 100%;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+    .game-container {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 1.5em;
+        width: 100vw;
+        max-width: 100vw;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        height: 100vh;
+        box-sizing: border-box;
+    }
+    #computer-hand, #player-hand {
+        width: 38vw;
+        min-width: 120px;
+        max-width: 270px;
+        margin: 0 0.5em 2.5em 0.5em;
+        padding: 2em 0.2em 2.2em 0.2em;
+        height: 74vh;
+        max-height: 74vh;
+        overflow-y: auto;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        position: relative;
+    }
+    #computer-hand h2, #player-hand h2 {
+        font-size: 1em;
+        margin-top: 0.2em;
+        margin-bottom: 0.3em;
+        padding-top: 0;
+        padding-bottom: 0;
+        position: absolute;
+        top: 0.2em;
+        left: 0;
+        width: 100%;
+        text-align: center;
+    }
+    #deck-area {
+        width: 90px;
+        min-width: 70px;
+        max-width: 110px;
+        margin: 2.5em 0.5em 3em 0.5em;
+        padding: 0;
+        align-self: flex-start;
+    }
+    #deck-platform {
+        width: 68px;
+        height: 92px;
+        border-radius: 10px;
+        top: 18px;
+    }
+    #deck {
+        width: 54px;
+        height: 78px;
+        border-radius: 8px;
+        position: relative;
+        top: 23px;
+    }
+    .books-label {
+        position: absolute;
+        bottom: 0.4em;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 0.85em;
+        color: #fff;
+        opacity: 0.85;
+        margin: 0;
+        padding: 0;
+    }
+    .cards {
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 4px;
+        min-height: 40px;
+        transition: gap 0.2s;
+    }
+    .card {
+        width: 38px;
+        height: 56px;
+        border-radius: 6px;
+        font-size: 0.85em;
+    }
+    #message-area {
         font-size: 0.95em;
-        padding: 0.5em 1em;
+        padding: 0.3em 0.1em;
     }
-    .hand p, .hand h2 {
-        font-size: 1em;
+    #response-buttons button {
+        min-width: 48px;
+        font-size: 0.85em;
+        padding: 0.3em 0.7em;
+        margin: 0 0.2em;
     }
-    .modal-content {
-        font-size: 1em;
-        padding: 0.7em;
+    .controls {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        transform: none;
+        margin: 0;
+        z-index: 11;
+        width: auto;
+    }
+    #new-game {
+        font-size: 0.85em;
+        padding: 0.3em 1em;
+        min-width: 90px;
+    }
+    header {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        z-index: 10;
+        font-size: 1em !important;
+        padding: 0.5em 0 !important;
+    }
+    header h1 {
+        font-size: 1.5em !important;
+        margin: 0.1em 0 0.1em 0;
+    }
+    footer {
+        font-size: 0.5em !important;
+        padding: 0.01em 0 !important;
+        min-height: unset;
+        line-height: 1.1;
+    }
+    #rules-btn {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        z-index: 11;
+        font-size: 0.9em;
+        padding: 0.3em 0.7em;
+    }
+    /* Responsive card shrinking for large hands */
+    #player-hand .cards .card,
+    #computer-hand .cards .card {
+        width: 38px;
+        height: 56px;
+    }
+    #player-hand .cards:has(.card:nth-child(n+11)) .card,
+    #computer-hand .cards:has(.card:nth-child(n+11)) .card {
+        width: 32px;
+        height: 46px;
+        font-size: 0.7em;
+    }
+    #player-hand .cards:has(.card:nth-child(n+15)) .card,
+    #computer-hand .cards:has(.card:nth-child(n+15)) .card {
+        width: 26px;
+        height: 38px;
+        font-size: 0.6em;
     }
 }
 

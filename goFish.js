@@ -25,6 +25,7 @@ class GoFishGame {
             };
         }
         this.turnCount = 0;
+        this.computerAskedThisTurn = [];
     }
 
     // Call this in constructor and when starting a new game
@@ -33,13 +34,12 @@ class GoFishGame {
         this.playerCards = [];
         this.computerCards = [];
         this.books = { player: 0, computer: 0 };
-        this.computerAskedBefore = [];
-        this.computerNoList = [];
         this.isPlayerTurn = true;
         this.waitingForGoFish = false;
         this.lastAskedRank = null;
         this.setupDeck();
         this.resetAIMemory();
+        this.computerAskedThisTurn = [];
     }
 
     setupDeck() {
@@ -59,8 +59,6 @@ class GoFishGame {
         this.playerCards = [];
         this.computerCards = [];
         this.books = { player: 0, computer: 0 };
-        this.computerAskedBefore = [];
-        this.computerNoList = [];
         this.resetAIMemory();
     }
 
@@ -123,6 +121,9 @@ class GoFishGame {
         document.getElementById('player-books').textContent = this.books.player;
         document.getElementById('computer-books').textContent = this.books.computer;
         document.querySelector('#deck .cards-remaining').textContent = this.deck.length;
+
+        // Enable mobile card hover effect
+        enableMobileCardHover();
     }
 
     checkBooks(hand, who) {
@@ -150,12 +151,6 @@ class GoFishGame {
         if (!this.isPlayerTurn || this.waitingForGoFish) return;
         const msg = document.getElementById('message-area');
         if (!this.playerCards.some(c => c.rank === card.rank)) return;
-
-        // Remember what the player has asked for
-        if (!this.computerAskedBefore.includes(card.rank)) {
-            this.computerAskedBefore.push(card.rank);
-        }
-        this.rankMemory[card.rank].playerHas = true;
 
         // Find all matches in computer's hand
         const matches = this.computerCards.filter(c => c.rank === card.rank);
@@ -194,7 +189,7 @@ class GoFishGame {
     }
 
     // --- AI chooses the best rank to ask for ---
-    aiChooseRank() {
+    aiChooseRank(alreadyAsked = []) {
         // Count cards in computer's hand
         let handCounts = {};
         this.computerCards.forEach(card => {
@@ -246,6 +241,21 @@ class GoFishGame {
             rankProbs[rank] = prob;
         }
 
+        // Remove already-asked ranks from candidates
+        for (let asked of alreadyAsked) {
+            delete rankProbs[asked];
+        }
+
+        // Prevent asking for a rank just received from the player, unless the player has drawn since
+        if (
+            this.lastPlayerGivenRank &&
+            handCounts[this.lastPlayerGivenRank] === 4 && // Computer just got all 4
+            !this.playerHasDrawnSinceGiven
+        ) {
+            // Remove this rank from candidates
+            delete rankProbs[this.lastPlayerGivenRank];
+        }
+
         // Pick the rank with the highest probability
         let bestRank = null;
         let bestProb = -Infinity;
@@ -258,7 +268,8 @@ class GoFishGame {
 
         // Fallback: original logic if all else fails
         if (!bestRank) {
-            let candidates = Object.keys(handCounts).filter(rank => handCounts[rank] < 4);
+            let candidates = Object.keys(handCounts)
+                .filter(rank => handCounts[rank] < 4 && !alreadyAsked.includes(rank));
             bestRank = candidates[0];
         }
 
@@ -267,7 +278,6 @@ class GoFishGame {
 
     // --- Update AI memory after each ask ---
     aiUpdateMemory(rank, result) {
-        // result: "yes" or "no"
         this.rankMemory[rank].lastAsked = this.turnCount;
         if (result === "no") {
             this.rankMemory[rank].denied = true;
@@ -282,11 +292,9 @@ class GoFishGame {
 
     // --- Update AI memory after player draws ---
     aiPlayerDrew(rank) {
-        // If player drew after being asked for a rank, maybe they got it
         if (rank) {
             this.rankMemory[rank].denied = false;
         }
-        // Mark that the player has drawn since last giving a card
         this.playerHasDrawnSinceGiven = true;
     }
 
@@ -303,6 +311,7 @@ class GoFishGame {
         this.isPlayerTurn = false;
         this.showHands();
         this.turnCount = (this.turnCount || 0) + 1;
+        this.computerAskedThisTurn = []; // <--- Add this line
 
         // --- If computer has no cards, draw one if possible ---
         if (this.computerCards.length === 0) {
@@ -361,7 +370,8 @@ class GoFishGame {
 
         const msg = document.getElementById('message-area');
         // AI chooses best rank to ask for
-        let askRank = this.aiChooseRank();
+        let askRank = this.aiChooseRank(this.computerAskedThisTurn);
+        this.computerAskedThisTurn.push(askRank);
 
         msg.textContent = `Computer: Do you have any ${askRank}s?`;
 
@@ -389,7 +399,6 @@ class GoFishGame {
             btnDiv.style.display = 'none';
             this.computerCards.push(...matches);
             this.playerCards = this.playerCards.filter(card => card.rank !== askRank);
-            this.computerNoList.push(askRank);
             msg.textContent = `Computer got ${matches.length} ${askRank}${matches.length > 1 ? 's' : ''} from you! Computer goes again.`;
             this.aiUpdateMemory(askRank, "yes");
             this.checkBooks(this.computerCards, 'computer');
@@ -430,14 +439,12 @@ class GoFishGame {
         newNoBtn.onclick = () => {
             btnDiv.style.display = 'none';
             msg.textContent = "Computer goes fishing!";
-            this.computerNoList.push(askRank);
             this.aiUpdateMemory(askRank, "no");
             const drawn = this.draw('computer');
             this.showHands();
             if (drawn && drawn.rank === askRank) {
                 // If computer draws what it asked for, it goes again
                 msg.textContent = `Computer drew the ${askRank}! Computer goes again.`;
-                this.computerNoList = [];
                 this.checkBooks(this.computerCards, 'computer');
                 this.showHands();
 
@@ -495,6 +502,21 @@ class GoFishGame {
             // Optionally, you could disable card clicks here if needed
         }
     }
+}
+
+// Add touch "hover" effect for cards and deck on mobile
+function enableTouchHover(selector, hoverClass = 'hovered') {
+    document.querySelectorAll(selector).forEach(el => {
+        el.addEventListener('touchstart', () => el.classList.add(hoverClass), {passive: true});
+        el.addEventListener('touchend', () => el.classList.remove(hoverClass), {passive: true});
+        el.addEventListener('touchcancel', () => el.classList.remove(hoverClass), {passive: true});
+    });
+}
+
+// Call this after rendering cards and deck
+function enableMobileCardHover() {
+    enableTouchHover('.card');
+    enableTouchHover('#deck');
 }
 
 // --- DOMContentLoaded ---

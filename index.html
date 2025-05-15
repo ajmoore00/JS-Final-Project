@@ -11,12 +11,12 @@
 <body>
     <header>
         <h1>Go Fish!</h1>
-        <button id="rules-btn">How to Play</button>
+        <button id="rules-btn" type="button">How to Play</button>
     </header>
 
-    <div id="rules-modal" class="modal">
+    <div id="rules-modal" class="modal" role="dialog" aria-modal="true">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close" tabindex="0" aria-label="Close">&times;</span>
             <h2>How to Play</h2>
             <ul>
                 <li>Click a card in your hand to ask the computer for that rank.</li>
@@ -33,7 +33,7 @@
         <div id="computer-hand" class="hand">
             <h2>Computer's Cards</h2>
             <div class="cards"></div>
-            <p>Books Collected: <span id="computer-books">0</span></p>
+            <p class="books-label">Books Collected: <span id="computer-books">0</span></p>
         </div>
         
         <div id="deck-area">
@@ -41,22 +41,22 @@
             <div id="deck" class="card">
                 <span class="cards-remaining"></span>
             </div>
-            <div id="message-area"></div>
+            <div id="message-area" aria-live="polite"></div>
             <div id="response-buttons" style="display:none;">
-                <button id="yes-btn">Yes</button>
-                <button id="no-btn">No</button>
+                <button id="yes-btn" type="button">Yes</button>
+                <button id="no-btn" type="button">No</button>
             </div>
         </div>
 
         <div id="player-hand" class="hand">
             <h2>Your Cards</h2>
             <div class="cards"></div>
-            <p>Books Collected: <span id="player-books">0</span></p>
+            <p class="books-label">Books Collected: <span id="player-books">0</span></p>
         </div>
     </div>
 
     <div class="controls">
-        <button id="new-game">Start Over</button>
+        <button id="new-game" type="button">Start Over</button>
     </div>
 
     <footer>
