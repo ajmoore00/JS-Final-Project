@@ -155,6 +155,8 @@ class GoFishGame {
         if (!this.computerAskedBefore.includes(card.rank)) {
             this.computerAskedBefore.push(card.rank);
         }
+        this.rankMemory[card.rank].playerHas = true;
+
         // Find all matches in computer's hand
         const matches = this.computerCards.filter(c => c.rank === card.rank);
         if (matches.length > 0) {
@@ -193,38 +195,74 @@ class GoFishGame {
 
     // --- AI chooses the best rank to ask for ---
     aiChooseRank() {
-        // Prioritize: (1) ranks with most in hand, (2) not recently denied, (3) not just asked, (4) not just booked
+        // Count cards in computer's hand
         let handCounts = {};
         this.computerCards.forEach(card => {
             handCounts[card.rank] = (handCounts[card.rank] || 0) + 1;
         });
 
-        // Don't ask for a rank just given by the player unless the player has drawn since
-        let candidates = Object.keys(handCounts).filter(rank => {
-            // Also, don't ask for a rank if the computer has all 4 (shouldn't happen, but safe)
-            if (handCounts[rank] === 4) return false;
+        // Count books (ranks that are already completed)
+        let bookedRanks = [];
+        for (let rank in this.rankMemory) {
             if (
-                this.lastPlayerGivenRank &&
-                rank === this.lastPlayerGivenRank &&
-                !this.playerHasDrawnSinceGiven
+                this.books.player + this.books.computer > 0 &&
+                (this.books.player > 0 || this.books.computer > 0)
             ) {
-                return false;
+                // If either player has a book for this rank, mark as booked
+                if (
+                    this.playerCards.filter(c => c.rank === rank).length === 0 &&
+                    this.computerCards.filter(c => c.rank === rank).length === 0 &&
+                    this.rankMemory[rank].denied &&
+                    this.rankMemory[rank].playerHas === false
+                ) {
+                    bookedRanks.push(rank);
+                }
             }
-            // Don't ask for a rank that was just denied
-            return !this.rankMemory[rank].denied;
-        });
+        }
 
-        // If all are denied or filtered, just use all ranks in hand
-        if (candidates.length === 0) candidates = Object.keys(handCounts);
+        // Estimate probability for each rank in hand
+        let rankProbs = {};
+        const totalRanks = 13;
+        const totalCards = 52;
+        const knownPlayerCards = this.playerCards.length;
+        const knownComputerCards = this.computerCards.length;
+        const knownBooks = this.books.player + this.books.computer;
 
-        // Sort by: most in hand, least recently asked
-        candidates.sort((a, b) => {
-            if (handCounts[b] !== handCounts[a]) return handCounts[b] - handCounts[a];
-            return (this.rankMemory[a].lastAsked || -1000) - (this.rankMemory[b].lastAsked || -1000);
-        });
+        for (let rank in handCounts) {
+            if (handCounts[rank] === 4) continue; // Already have a book
+            if (bookedRanks.includes(rank)) continue; // Already booked
 
-        // Return the best candidate
-        return candidates[0];
+            // Cards of this rank in computer's hand
+            const inHand = handCounts[rank];
+            // Cards of this rank in books (if you track which rank was booked, you could be more precise)
+            // For now, just skip if handCounts[rank] === 4
+
+            // Estimate: 4 - inHand = possible in player hand or deck
+            let possible = 4 - inHand;
+            // If you have memory that player has it, boost probability
+            let prob = possible / (knownPlayerCards + this.deck.length);
+            if (this.rankMemory[rank].playerHas === true) prob += 0.5;
+            if (this.rankMemory[rank].denied) prob -= 0.3;
+            rankProbs[rank] = prob;
+        }
+
+        // Pick the rank with the highest probability
+        let bestRank = null;
+        let bestProb = -Infinity;
+        for (let rank in rankProbs) {
+            if (rankProbs[rank] > bestProb) {
+                bestProb = rankProbs[rank];
+                bestRank = rank;
+            }
+        }
+
+        // Fallback: original logic if all else fails
+        if (!bestRank) {
+            let candidates = Object.keys(handCounts).filter(rank => handCounts[rank] < 4);
+            bestRank = candidates[0];
+        }
+
+        return bestRank;
     }
 
     // --- Update AI memory after each ask ---
@@ -356,6 +394,12 @@ class GoFishGame {
             this.aiUpdateMemory(askRank, "yes");
             this.checkBooks(this.computerCards, 'computer');
             this.showHands();
+
+            this.checkIfGameOver();
+            if (this.books.player + this.books.computer === 13 ||
+                (this.playerCards.length === 0 && this.computerCards.length === 0 && this.deck.length === 0)) {
+                return; // Stop further turns if game is over
+            }
 
             // If computer has no cards left after making a book, draw one if possible
             if (this.computerCards.length === 0) {
